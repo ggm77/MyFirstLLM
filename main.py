@@ -15,6 +15,7 @@ from model.myFirstLLM import MyFirstLLM
 BASE_DIR = Path(__file__).resolve().parent
 CHECKPOINT_NAME = "MyFirstLLM.pt"
 CHECKPOINT_DIR = BASE_DIR / "checkpoints"
+CHECKPOINT_PATH = CHECKPOINT_DIR / CHECKPOINT_NAME
 TOKENIZER_PATH = BASE_DIR / "tokenizer" / "MyFirstTokenizer"
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_PATH)
 
@@ -211,7 +212,16 @@ def main():
                 if not os.path.exists(CHECKPOINT_DIR):
                     os.makedirs(CHECKPOINT_DIR)
 
-                torch.save(checkpoint, os.path.join(CHECKPOINT_DIR, CHECKPOINT_NAME))
+                try:
+                  tmp_path = CHECKPOINT_PATH.with_suffix('.tmp')
+                  torch.save(checkpoint, tmp_path)
+
+                  os.replace(tmp_path, CHECKPOINT_PATH)
+                except Exception as ex:
+                   print(f"[Error] 체크포인트 저장중 에러 발생: {ex}")
+                   if tmp_path.exists():
+                      tmp_path.unlink()
+                   raise ex
 
                 now = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
                 print(f"[{now}] 체크포인트 저장: Step {current_total_step} | Loss: {loss.item():.4f}")
