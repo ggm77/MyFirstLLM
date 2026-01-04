@@ -11,11 +11,15 @@
 - Python: 3.11.4
 - PyTorch: 2.7.1
 - CUDA: 12.8
+- datasets: 4.0.0
+- transformers: 4.57.3
 
 ---
 
 ### 데이터셋
 영어 데이터셋은 <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">FineWeb-Edu</a>, 한글 데이터셋은 <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-2">FineWeb2</a>를 사용했습니다.
+
+영어 검증 데이터셋은 <a href="https://huggingface.co/datasets/Salesforce/wikitext">wikitext</a>, 한글 데이터셋은 <a href="https://huggingface.co/datasets/wikimedia/wikipedia">wikipedia</a>를 사용했습니다.
 
 ---
 
