@@ -44,15 +44,15 @@ def load_checkpoint(device, checkpoint_name=CHECKPOINT_NAME):
     checkpoint_path = os.path.join(CHECKPOINT_DIR, checkpoint_name)
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location=device)
-        # print(f"--- 체크포인트 발견: Step {checkpoint['step']}부터 재시작 ---")
-        print(f"--- 체크포인트 발견: Step {checkpoint['step']}에서 생성 ---")
+        print(f"--- 체크포인트 발견: Step {checkpoint['step']}부터 재시작 ---")
         return (
             checkpoint["step"],
             checkpoint["model_state_dict"],
             checkpoint["optimizer_state_dict"],
             checkpoint["dataset_state_dict"],
+            checkpoint["best_val_loss"],
         )
-    return 0, None, None, None
+    return 0, None, None, None, float("inf")
 
 
 def generate_causal_mask(seq_len, device):
@@ -94,11 +94,15 @@ def main():
 
     model = MyFirstLLM(VOCAB_SIZE, D_MODEL, N_HEAD, NUM_LAYERS, MAX_LEN).to(device)
 
-    start_step, model_state, optim_state, dataset_state = load_checkpoint(device)
+    start_step, model_state, optim_state, dataset_state, best_val_loss = load_checkpoint(device)
     if model_state:
         model.load_state_dict(model_state)
     else:
         print("경고! 불러올 model_state가 없습니다.")
+        
+    print(f"[start_step]: {start_step}")
+    print(f"[dataset_state]: {dataset_state}")
+    print(f"[best_val_loss]: {best_val_loss}")
 
     test_prompt = """
     The future of AI is
