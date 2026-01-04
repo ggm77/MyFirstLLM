@@ -15,19 +15,22 @@ class MyFirstLLM(nn.Module):
         decoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
             nhead=n_head,
-            dim_feedforward=d_model * 4, # 피드포워드 네트워크 차원수
+            dim_feedforward=d_model * 4,  # 피드포워드 네트워크 차원수
             dropout=0.1,
             batch_first=True,
-            norm_first=True, # 층 정규화를 먼저 하냐 여부
-            activation="gelu" # 활성화 함수
+            norm_first=True,  # 층 정규화를 먼저 하냐 여부
+            activation="gelu",  # 활성화 함수
         )
-        self.transformer = nn.TransformerEncoder(decoder_layer, num_layers=num_layers) # num_layer만큼 쌓기
+        self.transformer = nn.TransformerEncoder(
+            decoder_layer, num_layers=num_layers
+        )  # num_layer만큼 쌓기
 
         # 4. 출력 레이어
-        self.lm_head = nn.Linear(d_model, vocab_size) # 밀집층 (입력 차원, 출력 차원 = 은닉 벡터, 토큰)
+        self.lm_head = nn.Linear(
+            d_model, vocab_size
+        )  # 밀집층 (입력 차원, 출력 차원 = 은닉 벡터, 토큰)
 
     def forward(self, x, mask=None, src_key_padding_mask=None):
-
         """
         x: [batch_size, seq_len]
         mask: [seq_len, seq_len] (Causal Mask)
@@ -45,7 +48,9 @@ class MyFirstLLM(nn.Module):
 
         # 디코더 통과 (인코더에 마스킹 추가해서 디코더로 사용)
         # src_key_padding_mask를 전달하여 패딩 토큰에 어텐션하지 않도록 함
-        out = self.transformer(out, mask=mask, src_key_padding_mask=src_key_padding_mask, is_causal=True)
+        out = self.transformer(
+            out, mask=mask, src_key_padding_mask=src_key_padding_mask, is_causal=True
+        )
 
         # 로짓 계산 (은닉 벡터를 토큰으로)
         logits = self.lm_head(out)

@@ -18,63 +18,75 @@ if tokenizer.pad_token is None:
 
 criterion = nn.CrossEntropyLoss()
 
-VOCAB_SIZE = len(tokenizer) # 어휘 사전 크기
-D_MODEL = 512 # 임베딩 차원
-N_HEAD = 8 # 멀티 헤드 어텐션 개수
-NUM_LAYERS = 6 # 디코더 개수
-MAX_LEN = 256 # 입력 문자열 최대 길이
+VOCAB_SIZE = len(tokenizer)  # 어휘 사전 크기
+D_MODEL = 512  # 임베딩 차원
+N_HEAD = 8  # 멀티 헤드 어텐션 개수
+NUM_LAYERS = 6  # 디코더 개수
+MAX_LEN = 256  # 입력 문자열 최대 길이
 
 EPOCHS = 1
 BATCH_SIZE = 8
 SEED = 20260103
 
-kst = pytz.timezone('Asia/Seoul')
+kst = pytz.timezone("Asia/Seoul")
+
 
 def get_device():
-  if torch.cuda.is_available():
-    return torch.device('cuda')
-  elif torch.backends.mps.is_available():
-    return torch.device('mps')
-  else:
-    return torch.device('cpu')
-  
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
+    else:
+        return torch.device("cpu")
+
+
 def load_checkpoint(device, checkpoint_name=CHECKPOINT_NAME):
-  checkpoint_path = os.path.join(CHECKPOINT_DIR, checkpoint_name)
-  if os.path.exists(checkpoint_path):
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    # print(f"--- 체크포인트 발견: Step {checkpoint['step']}부터 재시작 ---")
-    print(f"--- 체크포인트 발견: Step {checkpoint['step']}에서 생성 ---")
-    return checkpoint['step'], checkpoint['model_state_dict'], checkpoint['optimizer_state_dict'], checkpoint['dataset_state_dict']
-  return 0, None, None, None
+    checkpoint_path = os.path.join(CHECKPOINT_DIR, checkpoint_name)
+    if os.path.exists(checkpoint_path):
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        # print(f"--- 체크포인트 발견: Step {checkpoint['step']}부터 재시작 ---")
+        print(f"--- 체크포인트 발견: Step {checkpoint['step']}에서 생성 ---")
+        return (
+            checkpoint["step"],
+            checkpoint["model_state_dict"],
+            checkpoint["optimizer_state_dict"],
+            checkpoint["dataset_state_dict"],
+        )
+    return 0, None, None, None
+
 
 def generate_causal_mask(seq_len, device):
-  mask = torch.triu(torch.ones(seq_len, seq_len, device=device), diagonal=1).bool()
-  return mask
+    mask = torch.triu(torch.ones(seq_len, seq_len, device=device), diagonal=1).bool()
+    return mask
 
-def generate_text(model, tokenizer, prompt, max_new_tokens=50, temperature=1.0, device="cpu"):
-  model.eval()
 
-  input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+def generate_text(
+    model, tokenizer, prompt, max_new_tokens=50, temperature=1.0, device="cpu"
+):
+    model.eval()
 
-  with torch.no_grad():
-    for _ in range(max_new_tokens):
-      curr_seq_len = input_ids.size(1)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
 
-      inputs = input_ids[:, -MAX_LEN:]
-      causal_mask = generate_causal_mask(inputs.size(1), device)
+    with torch.no_grad():
+        for _ in range(max_new_tokens):
+            curr_seq_len = input_ids.size(1)
 
-      logits = model(inputs, mask=causal_mask)
+            inputs = input_ids[:, -MAX_LEN:]
+            causal_mask = generate_causal_mask(inputs.size(1), device)
 
-      next_token_logits = logits[:, -1, :] / temperature
+            logits = model(inputs, mask=causal_mask)
 
-      next_token = torch.argmax(next_token_logits, dim=-1).unsqueeze(0)
+            next_token_logits = logits[:, -1, :] / temperature
 
-      input_ids = torch.cat([input_ids, next_token], dim=-1)
+            next_token = torch.argmax(next_token_logits, dim=-1).unsqueeze(0)
 
-      if next_token.item() == tokenizer.eos_token_id:
-        break
+            input_ids = torch.cat([input_ids, next_token], dim=-1)
 
-  return tokenizer.decode(input_ids[0], skip_special_tokens=True)
+            if next_token.item() == tokenizer.eos_token_id:
+                break
+
+    return tokenizer.decode(input_ids[0], skip_special_tokens=True)
+
 
 def main():
     device = get_device()
@@ -86,7 +98,7 @@ def main():
     if model_state:
         model.load_state_dict(model_state)
     else:
-      print("경고! 불러올 model_state가 없습니다.")
+        print("경고! 불러올 model_state가 없습니다.")
 
     test_prompt = """
     The future of AI is
@@ -96,5 +108,6 @@ def main():
     print(f"Prompt: {test_prompt}")
     print(f"Generated: {generated}")
 
+
 if __name__ == "__main__":
-  main()
+    main()

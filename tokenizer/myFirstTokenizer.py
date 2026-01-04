@@ -11,15 +11,19 @@ SAVE_PATH = BASE_DIR / "MyFirstTokenizer"
 
 def main():
     print("데이터셋 로드 중...")
-    en_data = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train", streaming=True)
-    kr_data = load_dataset("HuggingFaceFW/fineweb-2", name="kor_Hang", split="train", streaming=True)
+    en_data = load_dataset(
+        "HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train", streaming=True
+    )
+    kr_data = load_dataset(
+        "HuggingFaceFW/fineweb-2", name="kor_Hang", split="train", streaming=True
+    )
     print("데이터셋 로드 완료")
 
     dataset = interleave_datasets(
         [en_data, kr_data],
         probabilities=[0.7, 0.3],
-        seed = SEED,
-        stopping_strategy="first_exhausted"
+        seed=SEED,
+        stopping_strategy="first_exhausted",
     )
 
     def batch_iterator(batch_size=1000):
@@ -32,8 +36,7 @@ def main():
     old_tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 
     new_tokenizer = old_tokenizer.train_new_from_iterator(
-        batch_iterator(),
-        vocab_size=VOCAB_SIZE
+        batch_iterator(), vocab_size=VOCAB_SIZE
     )
     print("토크나이저 학습 완료")
 
@@ -56,6 +59,7 @@ def main():
     print(f"토큰화 결과: {tokens}")
     print(f"인코딩 결과(ID): {ids}")
     print("-" * 30)
+
 
 if __name__ == "__main__":
     main()
