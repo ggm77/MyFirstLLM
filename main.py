@@ -13,6 +13,8 @@ import shutil
 
 from model.myFirstLLM import MyFirstLLM
 
+os.environ["HF_HUB_READ_TIMEOUT"] = "120"
+
 BASE_DIR = Path(__file__).resolve().parent
 CHECKPOINT_NAME = "MyFirstLLM.pt"
 BEST_CHECKPOINT_NAME = "best.pt"
