@@ -129,13 +129,13 @@ def main():
     print(f"[best_val_loss]: {best_val_loss}")
     print_dataset_summary(dataset_state)
 
-    test_prompt = """
-    The future of AI is
-    """.strip()
+    print("[ Prompt ]")
+    test_prompt = input(">> ").strip()
 
     generated = generate_text(model, tokenizer, test_prompt, device=device)
-    print(f"|    Prompt | {test_prompt} |")
-    print(f"| Generated | {generated} |")
+    
+    print("[ Generated ]")
+    print(f">> {generated[len(test_prompt):].strip()}")
 
 
 if __name__ == "__main__":
