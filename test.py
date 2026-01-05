@@ -59,6 +59,31 @@ def generate_causal_mask(seq_len, device):
     mask = torch.triu(torch.ones(seq_len, seq_len, device=device), diagonal=1).bool()
     return mask
 
+# dataset_state를 출력해주는 함수
+def print_dataset_summary(state):
+
+    epoch = state["epoch"]
+
+    ex_iters = state['examples_iterable']['examples_iterable']['ex_iterables']
+
+    en_info, kr_info = ex_iters
+
+    en_shard, en_idx = en_info['shard_idx'], en_info['shard_example_idx']
+    kr_shard, kr_idx = kr_info['shard_idx'], kr_info['shard_example_idx']
+
+    rng_info = state['examples_iterable']['examples_iterable']['bit_generator_state']
+    bit_gen_name = rng_info['bit_generator']
+    bit_gen_state = rng_info['state']
+
+    print(f"\n=== [Dataset State Summary (Epoch {epoch})] ===")
+
+    print(f"[0] en_data | Shard: {en_shard:3} | Index: {en_idx:,}")
+    print(f"[1] kr_data | Shard: {kr_shard:3} | Index: {kr_idx:,}")
+
+    print(f"▶ RNG Type: {bit_gen_name}")
+    print(f"▶ RNG State (Internal): {bit_gen_state}")
+
+    print("=" * 40 + "\n")
 
 def generate_text(
     model, tokenizer, prompt, max_new_tokens=50, temperature=1.0, device="cpu"
@@ -101,16 +126,16 @@ def main():
         print("경고! 불러올 model_state가 없습니다.")
         
     print(f"[start_step]: {start_step}")
-    print(f"[dataset_state]: {dataset_state}")
     print(f"[best_val_loss]: {best_val_loss}")
+    print_dataset_summary(dataset_state)
 
     test_prompt = """
     The future of AI is
     """.strip()
 
     generated = generate_text(model, tokenizer, test_prompt, device=device)
-    print(f"Prompt: {test_prompt}")
-    print(f"Generated: {generated}")
+    print(f"|    Prompt | {test_prompt} |")
+    print(f"| Generated | {generated} |")
 
 
 if __name__ == "__main__":
