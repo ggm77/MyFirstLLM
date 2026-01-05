@@ -321,7 +321,6 @@ def main():
                 tmp_path = CHECKPOINT_PATH.with_suffix(".tmp")
                 actual_path = CHECKPOINT_PATH
 
-                best_tmp_path = BEST_CHECKPOINT_PATH.with_suffix(".tmp")
                 best_actual_path = BEST_CHECKPOINT_PATH
 
                 now = datetime.now(kst).strftime("%Y-%m-%d %H:%M:%S")
@@ -332,7 +331,7 @@ def main():
                     os.replace(tmp_path, actual_path)
 
                     if best_val_loss_changed:
-                        shutil.copy2(best_tmp_path, best_actual_path)
+                        shutil.copy2(actual_path, best_actual_path)
                         best_val_loss_changed = False
                         print(f"[{now}] 베스트 모델 저장: Step {current_total_step} | Val Loss: {best_val_loss:.4f}")
 
